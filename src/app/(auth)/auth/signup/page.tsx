@@ -44,14 +44,6 @@ export default function SignUpPage() {
 
       if (error) throw error;
 
-      if (data.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName,
-        });
-      }
-
       toast({
         title: "Success",
         description: "Account created successfully. Please check your email.",
