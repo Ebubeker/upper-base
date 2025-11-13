@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -26,6 +33,8 @@ export default function NewCommunityPage() {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("general");
+  const [isPublic, setIsPublic] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState("");
 
@@ -42,6 +51,8 @@ export default function NewCommunityPage() {
         name,
         description,
         user.id,
+        category,
+        isPublic,
         isPaid,
         priceInCents
       );
@@ -106,6 +117,41 @@ export default function NewCommunityPage() {
                 placeholder="A brief description of your community"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="technology">Technology</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="health">Health & Wellness</SelectItem>
+                  <SelectItem value="creative">Creative Arts</SelectItem>
+                  <SelectItem value="sports">Sports & Fitness</SelectItem>
+                  <SelectItem value="gaming">Gaming</SelectItem>
+                  <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="public">Public Community</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow anyone to discover and join your community
+                </p>
+              </div>
+              <Switch
+                id="public"
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
               />
             </div>
 

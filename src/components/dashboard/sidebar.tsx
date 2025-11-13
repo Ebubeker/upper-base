@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -52,6 +53,11 @@ export function Sidebar() {
       title: "Dashboard",
       href: "/dashboard",
       icon: Home,
+    },
+    {
+      title: "Discovery",
+      href: "/dashboard/discovery",
+      icon: Compass,
     },
   ];
 

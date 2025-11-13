@@ -32,21 +32,26 @@ export async function createCommunity(
   name: string,
   description: string,
   userId: string,
+  category: string = "general",
+  isPublic: boolean = false,
   isPaid: boolean = false,
   price?: number
 ): Promise<Community> {
   const supabase = createClient();
   const slug = generateSlug(name);
 
-  const { data, error } = await supabase
+  const { data, error} = await supabase
     .from("communities")
     .insert({
       name,
       description,
       slug,
       owner_id: userId,
+      category,
+      is_public: isPublic,
       is_paid: isPaid,
       price,
+      custom_module_names: {},
       member_count: 0,
     })
     .select()

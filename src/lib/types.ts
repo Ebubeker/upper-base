@@ -6,6 +6,18 @@ export interface User {
   created_at: string;
 }
 
+export type CommunityCategory =
+  | 'general'
+  | 'education'
+  | 'technology'
+  | 'business'
+  | 'health'
+  | 'creative'
+  | 'sports'
+  | 'gaming'
+  | 'lifestyle'
+  | 'other';
+
 export interface Community {
   id: string;
   owner_id: string;
@@ -14,10 +26,13 @@ export interface Community {
   slug: string;
   avatar_url?: string;
   banner_url?: string;
+  category: CommunityCategory;
+  is_public: boolean;
   is_paid: boolean;
   price?: number;
   stripe_product_id?: string;
   stripe_price_id?: string;
+  custom_module_names: Record<string, string>;
   member_count: number;
   created_at: string;
   updated_at: string;
