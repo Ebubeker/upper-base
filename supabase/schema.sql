@@ -15,9 +15,31 @@ CREATE TABLE profiles (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
-CREATE POLICY "Users can view their own profile"
+CREATE POLICY "Users can view profiles of community members"
   ON profiles FOR SELECT
-  USING (auth.uid() = id);
+  USING (
+    -- Allow viewing own profile
+    auth.uid() = id
+    OR
+    -- Allow viewing profiles of users in the same community
+    EXISTS (
+      SELECT 1 FROM community_members cm1
+      WHERE cm1.user_id = profiles.id
+      AND EXISTS (
+        SELECT 1 FROM community_members cm2
+        WHERE cm2.user_id = auth.uid()
+        AND cm2.community_id = cm1.community_id
+      )
+    )
+    OR
+    -- Allow viewing profiles of users in communities the viewer owns
+    EXISTS (
+      SELECT 1 FROM community_members cm
+      JOIN communities c ON c.id = cm.community_id
+      WHERE cm.user_id = profiles.id
+      AND c.owner_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Users can insert their own profile"
   ON profiles FOR INSERT
