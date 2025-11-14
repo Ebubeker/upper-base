@@ -15,6 +15,53 @@ export async function getCommunities(userId: string): Promise<Community[]> {
   return data || [];
 }
 
+export async function getAllUserCommunities(userId: string): Promise<Community[]> {
+  const supabase = createClient();
+
+  const { data: ownedData } = await supabase
+    .from("communities")
+    .select("*")
+    .eq("owner_id", userId);
+
+  const { data: memberData } = await supabase
+    .from("community_members")
+    .select("community_id")
+    .eq("user_id", userId);
+
+  const memberCommunityIds = (memberData || []).map((m) => m.community_id);
+
+  if (memberCommunityIds.length > 0) {
+    const { data: joinedData } = await supabase
+      .from("communities")
+      .select("*")
+      .in("id", memberCommunityIds);
+
+    const allCommunities = [...(ownedData || []), ...(joinedData || [])];
+    const uniqueCommunities = Array.from(
+      new Map(allCommunities.map((c) => [c.id, c])).values()
+    );
+
+    return uniqueCommunities.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  return ownedData || [];
+}
+
+export async function isOwner(communityId: string, userId: string): Promise<boolean> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("communities")
+    .select("owner_id")
+    .eq("id", communityId)
+    .single();
+
+  if (error) return false;
+  return data?.owner_id === userId;
+}
+
 export async function getCommunity(id: string): Promise<Community | null> {
   const supabase = createClient();
 

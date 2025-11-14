@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
-import { getCommunities } from "@/services/communityService";
+import { getAllUserCommunities } from "@/services/communityService";
 import { createClient } from "@/lib/supabase/client";
 import type { Community } from "@/lib/types";
 import { useRouter } from "next/navigation";
@@ -37,7 +37,7 @@ export function Sidebar() {
   const loadCommunities = async () => {
     if (!user) return;
     try {
-      const data = await getCommunities(user.id);
+      const data = await getAllUserCommunities(user.id);
       setCommunities(data);
     } catch (error) {
     }

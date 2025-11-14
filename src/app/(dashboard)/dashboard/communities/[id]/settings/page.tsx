@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Trash } from "lucide-react";
+import { ArrowLeft, Trash, Copy, Check, Link2 } from "lucide-react";
 import Link from "next/link";
 import {
   getCommunity,
@@ -36,6 +36,7 @@ export default function CommunitySettingsPage() {
   const [modules, setModules] = useState<CommunityModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -142,6 +143,29 @@ export default function CommunitySettingsPage() {
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!community) return;
+
+    const shareLink = `${window.location.origin}/join/${community.slug}`;
+
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+      toast({
+        title: "Link copied!",
+        description: "Share this link with others to invite them to your community",
+      });
+
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy link",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -238,6 +262,44 @@ export default function CommunitySettingsPage() {
           <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Shareable Link</CardTitle>
+          <CardDescription>
+            Share this link with others to invite them to join your community
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 rounded-lg border p-3 bg-muted/50">
+              <Link2 className="h-4 w-4 text-muted-foreground" />
+              <code className="text-sm flex-1 truncate">
+                {typeof window !== "undefined" && community
+                  ? `${window.location.origin}/join/${community.slug}`
+                  : "Loading..."}
+              </code>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyLink}
+              className="shrink-0"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {community?.is_public
+              ? "Anyone with this link can view and join your community."
+              : "Only people with this link can join your community. Make it public in General Settings to allow discovery."}
+          </p>
         </CardContent>
       </Card>
 
