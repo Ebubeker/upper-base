@@ -22,14 +22,17 @@ import {
   deleteCommunity,
   getCommunityModules,
   toggleModule,
+  isOwner,
 } from "@/services/communityService";
 import type { Community, CommunityModule } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/hooks/use-user";
 
 export default function CommunitySettingsPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
   const communityId = params.id as string;
 
   const [community, setCommunity] = useState<Community | null>(null);
@@ -37,6 +40,7 @@ export default function CommunitySettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isOwnerUser, setIsOwnerUser] = useState(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -45,14 +49,29 @@ export default function CommunitySettingsPage() {
 
   useEffect(() => {
     loadData();
-  }, [communityId]);
+  }, [communityId, user]);
 
   const loadData = async () => {
+    if (!user) return;
+
     try {
-      const [communityData, modulesData] = await Promise.all([
+      const [communityData, modulesData, ownerCheck] = await Promise.all([
         getCommunity(communityId),
         getCommunityModules(communityId),
+        isOwner(communityId, user.id),
       ]);
+
+      setIsOwnerUser(ownerCheck);
+
+      if (!ownerCheck) {
+        toast({
+          title: "Access Denied",
+          description: "Only the community owner can access settings",
+          variant: "destructive",
+        });
+        router.push(`/dashboard/communities/${communityId}`);
+        return;
+      }
 
       if (communityData) {
         setCommunity(communityData);
@@ -173,6 +192,23 @@ export default function CommunitySettingsPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!isOwnerUser) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground mb-4">
+              You don't have permission to access this page
+            </p>
+            <Link href={`/dashboard/communities/${communityId}`}>
+              <Button>Return to Community</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }

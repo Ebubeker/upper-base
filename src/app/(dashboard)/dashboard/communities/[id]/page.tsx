@@ -11,29 +11,44 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Users } from "lucide-react";
 import Link from "next/link";
 import {
   getCommunity,
   getCommunityModules,
+  isOwner,
 } from "@/services/communityService";
 import type { Community, CommunityModule } from "@/lib/types";
 import { ChatModule } from "@/components/modules/chat-module";
 import { NotesModule } from "@/components/modules/notes-module";
 import { TasksModule } from "@/components/modules/tasks-module";
 import { motion } from "framer-motion";
+import { useUser } from "@/hooks/use-user";
 
 export default function CommunityPage() {
   const params = useParams();
+  const { user } = useUser();
   const communityId = params.id as string;
   const [community, setCommunity] = useState<Community | null>(null);
   const [modules, setModules] = useState<CommunityModule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOwnerUser, setIsOwnerUser] = useState(false);
 
   useEffect(() => {
     loadCommunity();
     loadModules();
-  }, [communityId]);
+    checkOwnership();
+  }, [communityId, user]);
+
+  const checkOwnership = async () => {
+    if (!user) return;
+    try {
+      const ownerCheck = await isOwner(communityId, user.id);
+      setIsOwnerUser(ownerCheck);
+    } catch (error) {
+      setIsOwnerUser(false);
+    }
+  };
 
   const loadCommunity = async () => {
     try {
@@ -94,12 +109,22 @@ export default function CommunityPage() {
             {community.description || "No description"}
           </p>
         </motion.div>
-        <Link href={`/dashboard/communities/${communityId}/settings`}>
-          <Button variant="outline">
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Button>
-        </Link>
+        {isOwnerUser && (
+          <div className="flex items-center gap-2">
+            <Link href={`/dashboard/communities/${communityId}/members`}>
+              <Button variant="outline">
+                <Users className="mr-2 h-4 w-4" />
+                Members
+              </Button>
+            </Link>
+            <Link href={`/dashboard/communities/${communityId}/settings`}>
+              <Button variant="outline">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <motion.div
